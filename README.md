@@ -24,8 +24,10 @@ This project is a fully custom-built compiler pipeline and stack-based virtual m
    * Generates a nested, collapsible Tree view of the Abstract Syntax Tree (AST) representing control structures, expressions with correct operator precedence, declarations, and function points.
 2. **Interactive Bytecode Disassembler:**
    * Shows the raw compiled stack instructions (`PUSH`, `LOAD`, `STORE`, `JMP`, `ADD`, `LTE`, etc.) with physical address offsets and comments mapping instructions back to their corresponding source lines.
-3. **Step-Through Bidirectional VM Debugger:**
-   * Provides full control over VM execution. You can **Run** to completion, **Reset** at will, step **Forward** single instructions, and even step **Backward (Undo)** through historical snaps of execution.
+3. **Step-Through Bidirectional VM Debugger with Autoplay:**
+   * Provides complete tactile control over VM execution. You can **Run** to completion, **Reset** at will, step **Forward** single instructions, and even step **Backward (Undo)** through historical snaps of execution.
+   * **Custom Autoplay / Playback Mode:** Toggle an automated step-by-step playback mode to watch the program counter flow, operand stack accumulate, and environment swap values completely hands-free.
+   * **Adjustable Speed Interval:** Use the real-time speed slider to configure the stepping delay from a rapid `100ms` down to a slow, methodical `1500ms` observation pace.
    * Tracks the Live Operand Stack, Program Counter/Instruction Pointer (IP), Scope Symbol Table (globals, values), and standard output (`stdout`) in real-time.
 
 ---
