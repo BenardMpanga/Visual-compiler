@@ -1,0 +1,6 @@
+{
+  "name": "Visual Compiler & Bytecode VM",
+  "description": "An interactive, browser-based compiler and stack VM visualization tool. Write source code and see lexing, parsing (AST), bytecode generation, and live execution step-by-step.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
