@@ -264,6 +264,54 @@
                     <span class="material-icons text-[16px]">play_arrow</span> Run
                   </button>
 
+                  <div class="h-6 w-px bg-[#2D2D2D] mx-1"></div>
+
+                  <!-- VM Autoplay Play/Pause button -->
+                  @if (isPlaying()) {
+                    <button
+                      id="vm-autoplay-btn"
+                      type="button"
+                      (click)="togglePlay()"
+                      [disabled]="isDone"
+                      class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-600/10 hover:bg-amber-600/15 text-amber-400 border border-amber-500/30 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer animate-pulse font-mono text-[10px]"
+                      title="Pause auto-stepping"
+                    >
+                      <span class="material-icons text-[16px] animate-spin" style="animation-duration: 3s">autorenew</span> Active
+                    </button>
+                  } @else {
+                    <button
+                      id="vm-autoplay-btn"
+                      type="button"
+                      (click)="togglePlay()"
+                      [disabled]="isDone"
+                      class="flex items-center gap-1.5 px-3.5 py-2 bg-[#1A1A1A] hover:bg-[#222] text-gray-300 border border-[#2D2D2D] text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
+                      title="Start auto-stepping"
+                    >
+                      <span class="material-icons text-[16px]">slideshow</span> Auto
+                    </button>
+                  }
+
+                  <!-- Playback speed slider -->
+                  <div class="flex items-center gap-2 px-2.5 py-1 bg-[#141414] border border-[#2D2D2D] rounded h-[34px]" id="speed-slider-container">
+                    <span class="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-widest leading-none select-none">Interval:</span>
+                    <input 
+                      id="playback-speed-range"
+                      type="range"
+                      min="100"
+                      max="1500"
+                      step="100"
+                      [value]="playbackSpeed()"
+                      (input)="playbackSpeed.set($any($event.target).valueAsNumber)"
+                      class="w-16 h-1 bg-[#2D2D2D] rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-400 outline-none"
+                      title="Adjust auto-step step interval in milliseconds"
+                    />
+                    <span class="text-[9px] font-mono text-emerald-400 font-bold w-10 shrink-0 text-right leading-none select-none">
+                      {{ playbackSpeed() }}ms
+                    </span>
+                  </div>
+
+                  <div class="h-6 w-px bg-[#2D2D2D] mx-1"></div>
+
                   <!-- Reset debugger buttons -->
                   <button
                     id="vm-reset-btn"

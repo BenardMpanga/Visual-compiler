@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Lexer, Token } from './compiler-core/lexer';
@@ -22,7 +22,7 @@ export interface CompilerExample {
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnDestroy {
   // Pre-loaded executable examples
   readonly examples: CompilerExample[] = [
     {
@@ -97,6 +97,9 @@ print(status);`
   // Interactive VM and State Tracer Signals
   private vmInstance: VirtualMachine | null = null;
   readonly vmState = signal<VMStateSnapshot | null>(null);
+  readonly isPlaying = signal<boolean>(false);
+  readonly playbackSpeed = signal<number>(500);
+  private autoStepTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     // Compile and sync pipeline when sourceCode changes in Auto-Compile mode
@@ -105,6 +108,10 @@ print(status);`
         this.runPipeline(this.sourceCode());
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.pauseAutoStep();
   }
 
   // Calculated utilities for visual alignment and feedback
@@ -148,6 +155,7 @@ print(status);`
    * Main Compiler Pipeline: Lexer -> Parser -> AST Map -> Compiler -> VM Reset
    */
   runPipeline(code: string): void {
+    this.pauseAutoStep();
     this.lexerErrors.set([]);
     this.parserErrors.set([]);
 
@@ -223,6 +231,60 @@ print(status);`
 
   // --- VM Step Debugger Visual Controllers ---
 
+  togglePlay(): void {
+    if (this.isPlaying()) {
+      this.pauseAutoStep();
+    } else {
+      this.startAutoStep();
+    }
+  }
+
+  startAutoStep(): void {
+    const state = this.vmState();
+    const isDone = state && (state.status === 'HALTED' || state.status === 'ERROR');
+    if (isDone) {
+      return;
+    }
+
+    this.isPlaying.set(true);
+    this.scheduleNextStep();
+  }
+
+  pauseAutoStep(): void {
+    this.isPlaying.set(false);
+    if (this.autoStepTimeoutId) {
+      clearTimeout(this.autoStepTimeoutId);
+      this.autoStepTimeoutId = null;
+    }
+  }
+
+  private scheduleNextStep(): void {
+    if (this.autoStepTimeoutId) {
+      clearTimeout(this.autoStepTimeoutId);
+    }
+
+    this.autoStepTimeoutId = setTimeout(() => {
+      if (!this.isPlaying()) return;
+
+      const beforeState = this.vmState();
+      const isDoneBefore = beforeState && (beforeState.status === 'HALTED' || beforeState.status === 'ERROR');
+      if (isDoneBefore) {
+        this.pauseAutoStep();
+        return;
+      }
+
+      this.vmStepForward();
+
+      const afterState = this.vmState();
+      const isDoneAfter = afterState && (afterState.status === 'HALTED' || afterState.status === 'ERROR');
+      if (isDoneAfter) {
+        this.pauseAutoStep();
+      } else {
+        this.scheduleNextStep();
+      }
+    }, this.playbackSpeed());
+  }
+
   vmStepForward(): void {
     if (!this.vmInstance) return;
     this.vmInstance.step();
@@ -230,6 +292,7 @@ print(status);`
   }
 
   vmStepBackward(): void {
+    this.pauseAutoStep();
     if (!this.vmInstance) return;
     const stepped = this.vmInstance.stepBackward();
     if (stepped) {
@@ -238,12 +301,14 @@ print(status);`
   }
 
   vmRunToCompletion(): void {
+    this.pauseAutoStep();
     if (!this.vmInstance) return;
     this.vmInstance.runToCompletion();
     this.vmState.set(this.vmInstance.saveSnapshot());
   }
 
   vmReset(): void {
+    this.pauseAutoStep();
     if (!this.vmInstance) return;
     this.vmInstance.reset();
     this.vmState.set(this.vmInstance.saveSnapshot());
